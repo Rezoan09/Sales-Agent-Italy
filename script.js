@@ -34,20 +34,9 @@ function setQuickReplies(options = []) {
     const btn = document.createElement("button");
     btn.className = "quick-reply-btn";
     btn.textContent = option.label;
-    btn.onclick = () => handleUserInput(option.value, true);
+    btn.onclick = () => handleUserInput(option.value, true, option.label);
     quickReplies.appendChild(btn);
   });
-}
-
-function showMainMenu() {
-  state = "main_menu";
-  addMessage("Ciao 👋 Benvenuto da Ristorante Bella Trento.\nCome posso aiutarti oggi?");
-  setQuickReplies([
-    { label: "Prenotare un tavolo", value: "prenotare" },
-    { label: "Vedere il menu", value: "menu" },
-    { label: "Orari e posizione", value: "orari" },
-    { label: "Parlare con lo staff", value: "staff" }
-  ]);
 }
 
 function resetBookingData() {
@@ -61,90 +50,108 @@ function resetBookingData() {
   };
 }
 
-function handleMainMenu(input) {
-  const value = input.toLowerCase();
-
-  if (value.includes("prenot")) {
-    resetBookingData();
-    state = "booking_date";
-    addMessage("Perfetto. Per quale giorno vuoi prenotare?");
-    setQuickReplies([
-      { label: "Oggi", value: "Oggi" },
-      { label: "Domani", value: "Domani" },
-      { label: "Un'altra data", value: "Un'altra data" }
-    ]);
-  } else if (value.includes("menu")) {
-    addMessage("Certo 😊\nEcco il nostro menu demo:\n\n• Pizza Margherita\n• Pasta Carbonara\n• Tiramisù\n• Acqua / Coca-Cola");
-    addMessage("Vuoi anche prenotare un tavolo?");
-    setQuickReplies([
-      { label: "Sì, prenoto", value: "prenotare" },
-      { label: "No, grazie", value: "no_thanks" }
-    ]);
-    state = "menu_followup";
-  } else if (value.includes("orari")) {
-    addMessage("Siamo aperti:\nLun–Dom: 12:00–15:00 / 18:00–23:00\n\nCi trovi qui:\nVia Roma 24, Trento");
-    addMessage("Vuoi prenotare un tavolo?");
-    setQuickReplies([
-      { label: "Sì", value: "prenotare" },
-      { label: "No", value: "no_thanks" }
-    ]);
-    state = "hours_followup";
-  } else if (value.includes("staff")) {
-    state = "staff_message";
-    addMessage("Va bene. Scrivi il tuo messaggio qui sotto e lo inoltreremo al nostro staff.");
-    setQuickReplies([]);
-  } else {
-    addMessage("Mi dispiace, non ho capito bene.");
-    showMainMenu();
+function showMainMenu(showGreeting = true) {
+  state = "main_menu";
+  if (showGreeting) {
+    addMessage("👋 Hello! Welcome to Ristorante Bella Trento.\nHow can I help you today?");
   }
+  setQuickReplies([
+    { label: "Book a table", value: "book_table" },
+    { label: "See the menu", value: "see_menu" },
+    { label: "Hours and location", value: "hours_location" },
+    { label: "Talk to the staff", value: "talk_staff" }
+  ]);
 }
 
-function handleUserInput(input, fromButton = false) {
+function finishBooking() {
+  addMessage(
+    `Perfect ✅\nReservation registered.\n\nSummary:\n- Day: ${bookingData.date}\n- People: ${bookingData.people}\n- Time: ${bookingData.time}\n- Name: ${bookingData.name}\n- Phone: ${bookingData.phone}\n- Special request: ${bookingData.specialRequest || "None"}`
+  );
+
+  addMessage("We will confirm you as soon as possible. Thank you! 😊");
+
+  state = "booking_complete";
+  setQuickReplies([
+    { label: "New booking", value: "new_booking" },
+    { label: "Main menu", value: "main_menu_only" }
+  ]);
+}
+
+function handleUserInput(input, fromButton = false, displayText = null) {
   const text = input.trim();
   if (!text) return;
 
-  if (!fromButton) {
-    addMessage(text, "user");
-  } else {
-    addMessage(text, "user");
-  }
+  addMessage(fromButton && displayText ? displayText : text, "user");
 
   switch (state) {
     case "main_menu":
-      handleMainMenu(text);
+      if (text === "book_table") {
+        resetBookingData();
+        state = "booking_date";
+        addMessage("Perfect. For which day would you like to book?");
+        setQuickReplies([
+          { label: "Today", value: "Today" },
+          { label: "Tomorrow", value: "Tomorrow" },
+          { label: "Another date", value: "Another date" }
+        ]);
+      } else if (text === "see_menu") {
+        state = "menu_followup";
+        addMessage("Sure 😊\nHere is our demo menu:\n\n• Pizza Margherita\n• Pasta Carbonara\n• Tiramisù\n• Water / Coca-Cola");
+        addMessage("Would you also like to book a table?");
+        setQuickReplies([
+          { label: "Yes, book now", value: "book_from_menu" },
+          { label: "No, thanks", value: "no_thanks" }
+        ]);
+      } else if (text === "hours_location") {
+        state = "hours_followup";
+        addMessage("We are open:\nMon–Sun: 12:00–15:00 / 18:00–23:00\n\nFind us at:\nVia Roma 24, Trento");
+        addMessage("Would you like to book a table?");
+        setQuickReplies([
+          { label: "Yes, book now", value: "book_from_hours" },
+          { label: "No, thanks", value: "no_thanks" }
+        ]);
+      } else if (text === "talk_staff") {
+        state = "staff_message";
+        addMessage("Okay. Write your message below and we will forward it to our staff.");
+        setQuickReplies([]);
+      } else {
+        addMessage("Sorry, I didn't understand that.");
+        showMainMenu(false);
+      }
       break;
 
     case "menu_followup":
     case "hours_followup":
-      if (text.toLowerCase().includes("sì") || text.toLowerCase().includes("si") || text.toLowerCase().includes("prenot")) {
+      if (text === "book_from_menu" || text === "book_from_hours") {
         resetBookingData();
         state = "booking_date";
-        addMessage("Perfetto. Per quale giorno vuoi prenotare?");
+        addMessage("Perfect. For which day would you like to book?");
         setQuickReplies([
-          { label: "Oggi", value: "Oggi" },
-          { label: "Domani", value: "Domani" },
-          { label: "Un'altra data", value: "Un'altra data" }
+          { label: "Today", value: "Today" },
+          { label: "Tomorrow", value: "Tomorrow" },
+          { label: "Another date", value: "Another date" }
         ]);
       } else {
-        addMessage("Va bene 😊 Se hai bisogno di altro, sono qui.");
-        showMainMenu();
+        addMessage("Okay 😊 If you need anything else, I’m here.");
+        state = "main_menu";
+        showMainMenu(false);
       }
       break;
 
     case "booking_date":
-      if (text.toLowerCase() === "un'altra data" || text.toLowerCase() === "un altra data") {
+      if (text === "Another date") {
         state = "booking_custom_date";
-        addMessage("Scrivi la data che preferisci.\nEsempio: 12 aprile");
+        addMessage("Please type your preferred date.\nExample: April 12");
         setQuickReplies([]);
       } else {
         bookingData.date = text;
         state = "booking_people";
-        addMessage("Per quante persone?");
+        addMessage("For how many people?");
         setQuickReplies([
-          { label: "2 persone", value: "2" },
-          { label: "4 persone", value: "4" },
-          { label: "6 persone", value: "6" },
-          { label: "Altro", value: "altro" }
+          { label: "2 people", value: "2" },
+          { label: "4 people", value: "4" },
+          { label: "6 people", value: "6" },
+          { label: "Other", value: "other_people" }
         ]);
       }
       break;
@@ -152,29 +159,29 @@ function handleUserInput(input, fromButton = false) {
     case "booking_custom_date":
       bookingData.date = text;
       state = "booking_people";
-      addMessage("Per quante persone?");
+      addMessage("For how many people?");
       setQuickReplies([
-        { label: "2 persone", value: "2" },
-        { label: "4 persone", value: "4" },
-        { label: "6 persone", value: "6" },
-        { label: "Altro", value: "altro" }
+        { label: "2 people", value: "2" },
+        { label: "4 people", value: "4" },
+        { label: "6 people", value: "6" },
+        { label: "Other", value: "other_people" }
       ]);
       break;
 
     case "booking_people":
-      if (text.toLowerCase() === "altro") {
+      if (text === "other_people") {
         state = "booking_people_custom";
-        addMessage("Scrivi il numero di persone.");
+        addMessage("Please type the number of people.");
         setQuickReplies([]);
       } else {
         bookingData.people = text;
         state = "booking_time";
-        addMessage("A che ora preferisci?");
+        addMessage("At what time would you prefer?");
         setQuickReplies([
           { label: "19:00", value: "19:00" },
           { label: "20:00", value: "20:00" },
           { label: "21:00", value: "21:00" },
-          { label: "Altro", value: "altro" }
+          { label: "Other", value: "other_time" }
         ]);
       }
       break;
@@ -182,24 +189,24 @@ function handleUserInput(input, fromButton = false) {
     case "booking_people_custom":
       bookingData.people = text;
       state = "booking_time";
-      addMessage("A che ora preferisci?");
+      addMessage("At what time would you prefer?");
       setQuickReplies([
         { label: "19:00", value: "19:00" },
         { label: "20:00", value: "20:00" },
         { label: "21:00", value: "21:00" },
-        { label: "Altro", value: "altro" }
+        { label: "Other", value: "other_time" }
       ]);
       break;
 
     case "booking_time":
-      if (text.toLowerCase() === "altro") {
+      if (text === "other_time") {
         state = "booking_time_custom";
-        addMessage("Scrivi l'orario preferito.\nEsempio: 20:30");
+        addMessage("Please type your preferred time.\nExample: 20:30");
         setQuickReplies([]);
       } else {
         bookingData.time = text;
         state = "booking_name";
-        addMessage("Perfetto 👍 Scrivi il tuo nome, per favore.");
+        addMessage("Great 👍 Please type your name.");
         setQuickReplies([]);
       }
       break;
@@ -207,36 +214,34 @@ function handleUserInput(input, fromButton = false) {
     case "booking_time_custom":
       bookingData.time = text;
       state = "booking_name";
-      addMessage("Perfetto 👍 Scrivi il tuo nome, per favore.");
+      addMessage("Great 👍 Please type your name.");
       setQuickReplies([]);
       break;
 
     case "booking_name":
       bookingData.name = text;
       state = "booking_phone";
-      addMessage("Grazie. Ora scrivi il tuo numero di telefono.");
+      addMessage("Thanks. Now please type your phone number.");
       setQuickReplies([]);
       break;
 
     case "booking_phone":
       bookingData.phone = text;
       state = "booking_special_request";
-      addMessage(
-        `Grazie, ${bookingData.name}!\nRichiesta ricevuta per ${bookingData.date} alle ${bookingData.time} per ${bookingData.people} persone.\nVuoi aggiungere una richiesta speciale?`
-      );
+      addMessage("Would you like to add any special request?");
       setQuickReplies([
-        { label: "Sì", value: "si_special" },
-        { label: "No", value: "no_special" }
+        { label: "Yes", value: "special_yes" },
+        { label: "No", value: "special_no" }
       ]);
       break;
 
     case "booking_special_request":
-      if (text === "si_special" || text.toLowerCase() === "sì" || text.toLowerCase() === "si") {
+      if (text === "special_yes") {
         state = "booking_special_text";
-        addMessage("Scrivila qui e la inoltreremo allo staff.");
+        addMessage("Please write your special request.");
         setQuickReplies([]);
       } else {
-        bookingData.specialRequest = "Nessuna";
+        bookingData.specialRequest = "None";
         finishBooking();
       }
       break;
@@ -246,27 +251,34 @@ function handleUserInput(input, fromButton = false) {
       finishBooking();
       break;
 
+    case "booking_complete":
+      if (text === "new_booking") {
+        resetBookingData();
+        state = "booking_date";
+        addMessage("Perfect. For which day would you like to book?");
+        setQuickReplies([
+          { label: "Today", value: "Today" },
+          { label: "Tomorrow", value: "Tomorrow" },
+          { label: "Another date", value: "Another date" }
+        ]);
+      } else if (text === "main_menu_only") {
+        showMainMenu(false);
+      } else {
+        addMessage("Please choose one of the options below.");
+      }
+      break;
+
     case "staff_message":
-      addMessage("Grazie! Il tuo messaggio è stato registrato. Ti risponderemo al più presto.");
-      showMainMenu();
+      addMessage("Thank you! Your message has been recorded. We will reply as soon as possible.");
+      state = "main_menu";
+      showMainMenu(false);
       break;
 
     default:
-      addMessage("Torniamo al menu principale.");
-      showMainMenu();
+      state = "main_menu";
+      showMainMenu(false);
       break;
   }
-}
-
-function finishBooking() {
-  console.log("Prenotazione demo:", bookingData);
-
-  addMessage(
-    `Perfetto ✅\nPrenotazione registrata.\n\nRiepilogo:\n- Giorno: ${bookingData.date}\n- Persone: ${bookingData.people}\n- Ora: ${bookingData.time}\n- Nome: ${bookingData.name}\n- Telefono: ${bookingData.phone}\n- Richiesta speciale: ${bookingData.specialRequest}`
-  );
-
-  addMessage("Ti confermeremo al più presto. Grazie!");
-  showMainMenu();
 }
 
 sendBtn.addEventListener("click", () => {
@@ -281,4 +293,4 @@ userInput.addEventListener("keypress", (e) => {
   }
 });
 
-showMainMenu();
+showMainMenu(true);
