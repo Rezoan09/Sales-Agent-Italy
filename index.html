@@ -1,34 +1,99 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Assistente AI - Demo Ristorante</title>
+  <title>AI Restaurant Assistant Demo</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page">
-    <div class="header">
-      <h1>🍽️ AI Booking Assistant</h1>
-      <p>Demo for Ristorante Bella Trento</p>
-    </div>
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
 
-    <div class="chat-container">
-      <div id="chatbox" class="chatbox"></div>
+  <main class="app-shell">
+    <section class="hero">
+      <div class="hero-badge">AI Restaurant Assistant Demo</div>
+      <h1>Modern Booking & Ordering Assistant for Restaurants</h1>
+      <p>
+        A beautiful AI chat experience that helps restaurants handle reservations,
+        menu questions, and customer requests 24/7.
+      </p>
+    </section>
 
-      <div id="quickReplies" class="quick-replies"></div>
+    <section class="demo-layout">
+      <aside class="info-panel">
+        <div class="restaurant-card">
+          <div class="restaurant-top">
+            <div class="restaurant-icon">🍽️</div>
+            <div>
+              <h2>Ristorante Bella Trento</h2>
+              <p>Italian Dining • Trento, Italy</p>
+            </div>
+          </div>
 
-      <div class="input-area">
-        <input
-          type="text"
-          id="userInput"
-          placeholder="Scrivi qui..."
-          autocomplete="off"
-        />
-        <button id="sendBtn">Invia</button>
-      </div>
-    </div>
-  </div>
+          <div class="info-list">
+            <div class="info-item">
+              <span class="label">Hours</span>
+              <span class="value">Mon–Sun · 12:00–15:00 / 18:00–23:00</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Address</span>
+              <span class="value">Via Roma 24, Trento</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Phone</span>
+              <span class="value">+39 123 456 789</span>
+            </div>
+          </div>
+
+          <div class="mini-tags">
+            <span>Reservations</span>
+            <span>Menu Q&A</span>
+            <span>Orders</span>
+            <span>24/7 Replies</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <h3>Why restaurants love this</h3>
+          <ul>
+            <li>Replies instantly to customers</li>
+            <li>Reduces missed reservations</li>
+            <li>Collects orders in a structured way</li>
+            <li>Works on QR code, website, or direct link</li>
+          </ul>
+        </div>
+      </aside>
+
+      <section class="chat-wrapper">
+        <div class="chat-header">
+          <div class="chat-brand">
+            <div class="chat-avatar">🤖</div>
+            <div>
+              <h3>AI Booking Assistant</h3>
+              <p>Live Demo Experience</p>
+            </div>
+          </div>
+          <div class="status-pill">● Online</div>
+        </div>
+
+        <div id="chatbox" class="chatbox"></div>
+
+        <div id="quickReplies" class="quick-replies"></div>
+
+        <div class="input-area">
+          <input
+            type="text"
+            id="userInput"
+            placeholder="Type your message here..."
+            autocomplete="off"
+          />
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
