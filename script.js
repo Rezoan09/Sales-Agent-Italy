@@ -53,13 +53,13 @@ function resetBookingData() {
 function showMainMenu(showGreeting = true) {
   state = "main_menu";
   if (showGreeting) {
-    addMessage("👋 Hello! Welcome to Ristorante Bella Trento.\nHow can I help you today?");
+    addMessage("👋 Welcome to Ristorante Bella Trento.\nI’m your AI dining assistant. I can help with reservations, menu questions, and customer requests.);
   }
   setQuickReplies([
-    { label: "Book a table", value: "book_table" },
-    { label: "See the menu", value: "see_menu" },
-    { label: "Hours and location", value: "hours_location" },
-    { label: "Talk to the staff", value: "talk_staff" }
+    { label: "Book a Table", value: "book_table" },
+    { label: "Browse Menu", value: "see_menu" },
+    { label: "Hours & Location", value: "hours_location" },
+    { label: "Talk to Staff", value: "talk_staff" }
   ]);
 }
 
